@@ -8,8 +8,23 @@ namespace AdventOfCode
     {
         static void Main(string[] args)
         {
-            Day1.getInstance.Problem1("C:\\Users\\jschultz\\Projects\\AdventOfCode\\AdventOfCode\\Inputs\\input1.txt");
-            Day1.getInstance.Problem2("C:\\Users\\jschultz\\Projects\\AdventOfCode\\AdventOfCode\\Inputs\\input1.txt");
+            /*
+            Console.WriteLine(" ====== Day 1 =====");
+            Day1.Problem1("..\\..\\..\\..\\Inputs\\input1.txt");
+            Day1.Problem2("..\\..\\..\\..\\Inputs\\input1.txt");
+            Console.WriteLine(); 
+            */
+
+            /*
+            Console.WriteLine(" ====== Day 2 =====");
+            Day2.Problem1("..\\..\\..\\..\\Inputs\\input2.txt");
+            Day2.Problem2("..\\..\\..\\..\\Inputs\\input2.txt");
+            Console.WriteLine();
+            */
+
+            Console.WriteLine(" ====== Day 3 =====");
+
+
             Console.ReadKey();
         }
     }
