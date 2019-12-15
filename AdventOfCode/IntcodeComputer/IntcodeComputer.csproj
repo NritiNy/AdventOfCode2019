@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IntcodeComputer\IntcodeComputer.csproj" />
     <ProjectReference Include="..\Misc\Misc.csproj" />
   </ItemGroup>
 

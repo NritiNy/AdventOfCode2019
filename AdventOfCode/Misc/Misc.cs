@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace AdventOfCode
 {
-    public class Misc
+    public static class Misc
     {
         public static List<string> readLines(string inputFile, string seperator)
         {
