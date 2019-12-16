@@ -51,7 +51,7 @@ namespace AdventOfCode
                     if (instruction.InstructionType == InstructionType.Output)
                         Console.WriteLine($"Output: {buffer[0]}");
 
-                    instructionPointer += instruction.Size;
+                    instructionPointer = instruction.Next;
                 }
             }
 

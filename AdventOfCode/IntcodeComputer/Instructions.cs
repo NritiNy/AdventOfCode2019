@@ -7,8 +7,8 @@ namespace AdventOfCode
 {
     namespace Intcodes
     {
-        public enum InstructionType { Addition = 1, Multiplication = 2, Input = 3, Output = 4, Stop = 99 };
-        public enum ParameterMode { Position, Immediate };
+        public enum InstructionType { Addition = 1, Multiplication = 2, Input = 3, Output = 4, JumpIfTrue = 5, JumpIfFalse = 6, LessThan = 7, Equals = 8, Stop = 99 };
+        public enum ParameterMode { Position = 0, Immediate = 1 };
         public struct InstructionResult
         {
             public bool Result { get; private set; }
@@ -38,13 +38,15 @@ namespace AdventOfCode
 
             public int GetValue(int[] memory)
             {
-                if(Mode == ParameterMode.Immediate)
+                if (Mode == ParameterMode.Immediate)
                 {
                     return memory[Adress];
-                } else if (Mode == ParameterMode.Position)
+                }
+                else if (Mode == ParameterMode.Position)
                 {
                     return memory[memory[Adress]];
-                } else
+                }
+                else
                 {
                     throw new NotImplementedException($"Unexpected Parameter Mode: {Mode}");
                 }
@@ -52,10 +54,15 @@ namespace AdventOfCode
 
             public int GetPosition(int[] memory)
             {
-                if(Mode == ParameterMode.Position)
+                if (Mode == ParameterMode.Position)
                     return memory[Adress];
                 else
                     throw new NotImplementedException($"Parameter Mode must be {ParameterMode.Position}");
+            }
+
+            public override string ToString()
+            {
+                return $"Parameter[Mode: {Mode}, Adress: {Adress}]";
             }
         }
 
@@ -69,7 +76,7 @@ namespace AdventOfCode
 
                 foreach (InstructionType type in Enum.GetValues(typeof(InstructionType)))
                 {
-                    ret.Add((int)type, Assembly.GetExecutingAssembly().GetTypes().First(t => t.Name == type.ToString()+"Instruction"));
+                    ret.Add((int)type, Assembly.GetExecutingAssembly().GetTypes().First(t => t.Name == type.ToString() + "Instruction" && t.IsSubclassOf(typeof(IInstruction))));
                 }
 
                 return ret;
@@ -82,21 +89,23 @@ namespace AdventOfCode
 
             public abstract int Size { get; }
 
+            protected int? _next = null;
+            public int Next { get => _next ?? Adress + Size; }
+
             public Parameter[] Parameters { get; private set; }
 
             protected IInstruction(int position, List<int> parameterModes)
             {
                 Adress = position;
-                Parameters = new Parameter[Size-1];
+                Parameters = new Parameter[Size - 1];
 
                 parameterModes = parameterModes ?? new List<int>(Size);
-                for(int i = 1; i < Size; ++i)
+                for (int i = 1; i < Size; ++i)
                 {
-                    if (i < parameterModes.Count)
-                        Parameters[i-1] = new Parameter(Adress + i, (ParameterMode)parameterModes[i]);
+                    if (i <= parameterModes.Count)
+                        Parameters[i - 1] = new Parameter(Adress + i, (ParameterMode)parameterModes[i - 1]);
                     else
-                        Parameters[i-1] = new Parameter(Adress + i, 0);
-                    
+                        Parameters[i - 1] = new Parameter(Adress + i, ParameterMode.Position);
                 }
             }
 
@@ -112,7 +121,7 @@ namespace AdventOfCode
 
                 var paramModes = ("" + instructionOpCode).ToCharArray().ToList().ConvertAll(c => int.Parse("" + c));
                 paramModes.Reverse();
-               
+
                 object[] args = { position, paramModes };
                 return (IInstruction)Activator.CreateInstance(instruction, args);
             }
@@ -132,16 +141,14 @@ namespace AdventOfCode
             {
                 try
                 {
-                    //memory[Parameters[2].GetPosition(memory)] = Parameters[0].GetValue(memory) + Parameters[1].GetValue(memory);
-                    memory[memory[Adress + 3]] = (Parameters[0].Mode == ParameterMode.Immediate ? memory[Adress + 1] : memory[memory[Adress + 1]])
-                        + (Parameters[1].Mode == ParameterMode.Immediate ? memory[Adress + 2] : memory[memory[Adress + 2]]);
+                    memory[Parameters[2].GetPosition(memory)] = Parameters[0].GetValue(memory) + Parameters[1].GetValue(memory);
 
                     return new InstructionResult(true, "AdditionInstruction passed.");
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    return new InstructionResult(false, e.Message);
+                    return new InstructionResult(false, "");
                 }
             }
         }
@@ -160,10 +167,6 @@ namespace AdventOfCode
             {
                 try
                 {
-                    var input1 = memory[Adress + 1];
-                    var input2 = memory[Adress + 2];
-                    var destination = memory[Adress + 3];
-
                     memory[Parameters[2].GetPosition(memory)] = Parameters[0].GetValue(memory) * Parameters[1].GetValue(memory);
 
                     return new InstructionResult(true, "MiltiplicationInstruction passed.");
@@ -193,7 +196,8 @@ namespace AdventOfCode
                     memory[Parameters[0].GetPosition(memory)] = input;
 
                     return new InstructionResult(true, "InputInstruction passed.");
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     return new InstructionResult(false, e.Message);
                 }
@@ -214,10 +218,115 @@ namespace AdventOfCode
             {
                 try
                 {
-                    buffer[0] = Parameters[0].GetPosition(memory);
+                    buffer[0] = Parameters[0].GetValue(memory);
 
                     return new InstructionResult(true, "OutputInstruction passed.");
-                } catch (Exception e)
+                }
+                catch (Exception e)
+                {
+                    return new InstructionResult(false, e.Message);
+                }
+            }
+        }
+
+        public class JumpIfTrueInstruction : IInstruction
+        {
+            public JumpIfTrueInstruction(int position, List<int> parameterModes) : base(position, parameterModes)
+            {
+            }
+
+            public override InstructionType InstructionType => InstructionType.JumpIfTrue;
+
+            public override int Size => 3;
+
+            public override InstructionResult Execute(int[] memory, int[] buffer)
+            {
+                try
+                {
+                    if (Parameters[0].GetValue(memory) != 0)
+                        _next = Parameters[1].GetValue(memory);
+
+                    return new InstructionResult(true, "JumpIfTrueInstruction passed.");
+                }
+                catch (Exception e)
+                {
+                    return new InstructionResult(false, e.Message);
+                }
+            }
+        }
+
+        public class JumpIfFalseInstruction : IInstruction
+        {
+            public JumpIfFalseInstruction(int position, List<int> parameterModes) : base(position, parameterModes)
+            {
+            }
+
+            public override InstructionType InstructionType => InstructionType.JumpIfFalse;
+
+            public override int Size => 3;
+
+            public override InstructionResult Execute(int[] memory, int[] buffer)
+            {
+                try
+                {
+                    if (Parameters[0].GetValue(memory) == 0)
+                        _next = Parameters[1].GetValue(memory);
+
+                    return new InstructionResult(true, "JumpIfFalseInstruction passed.");
+                }
+                catch (Exception e)
+                {
+                    return new InstructionResult(false, e.Message);
+                }
+            }
+        }
+
+        public class LessThanInstruction : IInstruction
+        {
+            public LessThanInstruction(int position, List<int> parameterModes) : base(position, parameterModes)
+            {
+            }
+
+            public override InstructionType InstructionType => InstructionType.LessThan;
+
+            public override int Size => 4;
+
+            public override InstructionResult Execute(int[] memory, int[] buffer)
+            {
+                try
+                {
+                    bool less = Parameters[0].GetValue(memory) < Parameters[1].GetValue(memory);
+                    memory[Parameters[2].GetPosition(memory)] = less ? 1 : 0;
+
+                    return new InstructionResult(true, "LessThanInstruction passed.");
+                }
+                catch (Exception e)
+                {
+                    return new InstructionResult(false, e.Message);
+                }
+            }
+        }
+
+        public class EqualsInstruction : IInstruction
+        {
+            public EqualsInstruction(int position, List<int> parameterModes) : base(position, parameterModes)
+            {
+            }
+
+            public override InstructionType InstructionType => InstructionType.Equals;
+
+            public override int Size => 4;
+
+            public override InstructionResult Execute(int[] memory, int[] buffer)
+            {
+                try
+                {
+                    bool less = Parameters[0].GetValue(memory) == Parameters[1].GetValue(memory);
+                    memory[Parameters[2].GetPosition(memory)] = less ? 1 : 0;
+
+                    return new InstructionResult(true, "EqualsInstruction passed.");
+                }
+                catch (Exception e)
                 {
                     return new InstructionResult(false, e.Message);
                 }
