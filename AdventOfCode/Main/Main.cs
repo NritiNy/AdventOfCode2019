@@ -37,14 +37,23 @@ namespace AdventOfCode
 
             /*
             Console.WriteLine(" ====== Day 5 =====");
+            Console.WriteLine("Needs input: 1; Result is the last output.");
             Day5.Problem1("..\\..\\..\\..\\Inputs\\input5.txt");
+            Console.WriteLine("Needs input: 5; Result is the last output.");
             Day5.Problem2("..\\..\\..\\..\\Inputs\\input5.txt");
             Console.WriteLine();
             */
 
+            /*
             Console.WriteLine(" ====== Day 6 =====");
             Day6.Problem1("..\\..\\..\\..\\Inputs\\input6.txt");
             Day6.Problem2("..\\..\\..\\..\\Inputs\\input6.txt");
+            Console.WriteLine();
+            */
+
+            Console.WriteLine(" ====== Day 7 =====");
+            //Day7.Problem1("..\\..\\..\\..\\Inputs\\input7.txt");
+            Day7.Problem2("..\\..\\..\\..\\Inputs\\input7.txt");
             Console.WriteLine();
 
             Console.ReadKey();

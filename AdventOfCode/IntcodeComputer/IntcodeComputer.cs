@@ -1,42 +1,72 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AdventOfCode
 {
     namespace Intcodes
     {
+        public enum ExitCode { SUCCESS = 0, ERROR = 1};
+
+        public enum InputMode { Manual, Static, Automatic };
+        public enum OutputMode { Internal, External};
+
         public class IntcodeComputer
         {
-            public int[] Input { get; set; }
+            public int[] Programm { get; set; }
 
             public int[] CurrentMemoryState { get; private set; }
+            public int InstructionPointer { get; private set; } = 0;
 
-            public int Output { get => CurrentMemoryState[0]; }
+            public List<int> Input { get; set; } = new List<int>();
+            private int InputPointer { get; set; } = 0;
+            public InputMode InputMode { get; set; } = InputMode.Manual;
+
+            public List<int> Output { get; private set; } = new List<int>();
+            private int OutputPointer { get; set; } = 0;
+            public OutputMode OutputMode { get; set; } = OutputMode.External;
 
             public IntcodeComputer(int[] input = null)
             {
-                Input = (int[])input.Clone() ?? new int[0];
+                Programm = (int[])input.Clone() ?? new int[0];
                 Reset();
             }
 
-            public void Run()
+            public ExitCode Run()
             {
-                int instructionPointer = 0;
-                for (; instructionPointer < CurrentMemoryState.Length;)
+                for (; InstructionPointer < CurrentMemoryState.Length;)
                 {
-                    var instruction = IInstruction.GetInstruction(instructionOpCode: CurrentMemoryState[instructionPointer], position: instructionPointer);
+                    var instruction = IInstruction.GetInstruction(instructionOpCode: CurrentMemoryState[InstructionPointer], position: InstructionPointer);
 
                     int[] buffer = new int[1] { 0 };
                     if (instruction.InstructionType == InstructionType.Input)
                     {
-                        Console.WriteLine("Input: ");
-                        try
+                        if(InputMode == InputMode.Manual)
                         {
-                            buffer[0] = int.Parse(Console.ReadLine());
+                            Console.WriteLine("Input: ");
+                            try
+                            {
+                                buffer[0] = int.Parse(Console.ReadLine());
+                            }
+                            catch
+                            {
+                                Console.WriteLine("Failed to parse input.");
+                                return ExitCode.ERROR;
+                            }
                         }
-                        catch
+                        else
                         {
-                            Console.WriteLine("Failed to parse input.");
-                            break;
+                            try
+                            {
+                                buffer[0] = Input[InputPointer];
+                                if (InputMode == InputMode.Automatic)
+                                    ++InputPointer;
+                            } catch
+                            {
+                                Console.WriteLine($"No more input provided. (Only {Input.Count} inputs were provided.)");
+                                return ExitCode.ERROR;
+                            }
+                            
                         }
                     }
 
@@ -47,20 +77,34 @@ namespace AdventOfCode
                         {
                             Console.WriteLine($"Instruction '{instruction.InstructionType}' failed.");
                             Console.WriteLine(result.Message);
+                            return ExitCode.ERROR;
                         }
-                        break;
+                        else
+                            return ExitCode.SUCCESS;
                     }
 
                     if (instruction.InstructionType == InstructionType.Output)
-                        Console.WriteLine($"Output: {buffer[0]}");
+                    {
+                        if (OutputMode == OutputMode.External)
+                            Console.WriteLine($"Output: {buffer[0]}");
+                        else
+                            Output.Add(buffer[0]);
+                    }
 
-                    instructionPointer = instruction.Next;
+
+                    InstructionPointer = instruction.Next;
                 }
+                return ExitCode.SUCCESS;
             }
 
             public void Reset()
             {
-                CurrentMemoryState = (int[])Input.Clone();
+                CurrentMemoryState = (int[])Programm.Clone();
+                InstructionPointer = 0;
+                Input = new List<int>();
+                InputPointer = 0;
+                Output = new List<int>();
+                OutputPointer = 0;
             }
         }
     }

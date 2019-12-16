@@ -37,10 +37,10 @@ namespace AdventOfCode
                     inputValues[1] = noun;
                     inputValues[2] = verb;
 
-                    computer.Input = (int[])inputValues.Clone();
+                    computer.Programm = (int[])inputValues.Clone();
                     computer.Reset();
                     computer.Run();
-                    if (computer.Output == 19690720)
+                    if (computer.CurrentMemoryState[0] == 19690720)
                     {
                         found = true;
                         --noun; // it is raised by one at the end of the for loop
