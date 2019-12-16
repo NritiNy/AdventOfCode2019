@@ -17,6 +17,7 @@ namespace AdventOfCode
 
             public int[] CurrentMemoryState { get; private set; }
             public int InstructionPointer { get; private set; } = 0;
+            public int RelativeBase { get; set; } = 0;
 
             public List<int> Input { get; set; } = new List<int>();
             private int InputPointer { get; set; } = 0;
@@ -70,7 +71,7 @@ namespace AdventOfCode
                         }
                     }
 
-                    var result = instruction.Execute(CurrentMemoryState, buffer);
+                    var result = instruction.Execute(this, buffer);
                     if (!result)
                     {
                         if (instruction.InstructionType != InstructionType.Stop)
@@ -105,6 +106,21 @@ namespace AdventOfCode
                 InputPointer = 0;
                 Output = new List<int>();
                 OutputPointer = 0;
+            }
+
+
+            public IInstruction GetInstruction(int instructionOpCode, int position)
+            {
+                var code = instructionOpCode % 100;
+                instructionOpCode = (instructionOpCode - code) / 100;
+
+                Type instruction = IInstruction.AvailableInstructions[code];
+
+                var paramModes = ("" + instructionOpCode).ToCharArray().ToList().ConvertAll(c => int.Parse("" + c));
+                paramModes.Reverse();
+
+                object[] args = { this, paramModes };
+                return (IInstruction)Activator.CreateInstance(instruction, args);
             }
         }
     }
