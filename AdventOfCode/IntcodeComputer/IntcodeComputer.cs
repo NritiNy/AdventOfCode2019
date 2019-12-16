@@ -43,8 +43,11 @@ namespace AdventOfCode
                     var result = instruction.Execute(CurrentMemoryState, buffer);
                     if (!result)
                     {
-                        Console.WriteLine($"Instruction '{instruction.InstructionType}' failed.");
-                        Console.WriteLine(result.Message);
+                        if (instruction.InstructionType != InstructionType.Stop)
+                        {
+                            Console.WriteLine($"Instruction '{instruction.InstructionType}' failed.");
+                            Console.WriteLine(result.Message);
+                        }
                         break;
                     }
 

@@ -35,9 +35,16 @@ namespace AdventOfCode
             Console.WriteLine();
             */
 
+            /*
             Console.WriteLine(" ====== Day 5 =====");
             Day5.Problem1("..\\..\\..\\..\\Inputs\\input5.txt");
-            //Day5.Problem2("..\\..\\..\\..\\Inputs\\test_input.txt");
+            Day5.Problem2("..\\..\\..\\..\\Inputs\\input5.txt");
+            Console.WriteLine();
+            */
+
+            Console.WriteLine(" ====== Day 6 =====");
+            Day6.Problem1("..\\..\\..\\..\\Inputs\\input6.txt");
+            Day6.Problem2("..\\..\\..\\..\\Inputs\\input6.txt");
             Console.WriteLine();
 
             Console.ReadKey();
