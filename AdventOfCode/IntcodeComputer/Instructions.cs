@@ -69,14 +69,14 @@ namespace AdventOfCode
                 if (Mode == ParameterMode.Position)
                 {
                     var pos = computer.CurrentMemoryState()[Adress];
-                    if (pos > computer.CurrentMemoryState().Length)
+                    if (pos >= computer.CurrentMemoryState().Length)
                         computer.ResizeMemory((int)pos);
                     return pos;
                 }
                 else if (Mode == ParameterMode.Relative)
                 {
                     var pos = RelativeBase + computer.CurrentMemoryState()[Adress];
-                    if (pos > computer.CurrentMemoryState().Length)
+                    if (pos >= computer.CurrentMemoryState().Length)
                         computer.ResizeMemory((int)pos);
                     return pos;
                 }
@@ -178,8 +178,8 @@ namespace AdventOfCode
 
             public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
-                try
-                {
+                /*try
+                {*/
                     var in1 = Parameters[0].GetValue(ref computer);
                     var in2 = Parameters[1].GetValue(ref computer);
                     var dest = Parameters[2].GetPosition(ref computer);
@@ -187,11 +187,11 @@ namespace AdventOfCode
                     computer.CurrentMemoryState()[dest] = in1 * in2;
 
                     return new InstructionResult(true, "MiltiplicationInstruction passed.");
-                }
+                /*}
                 catch (Exception e)
                 {
                     return new InstructionResult(false, e.Message);
-                }
+                }*/
             }
         }
 
