@@ -8,7 +8,7 @@ namespace AdventOfCode
     {
         public static void Problem1(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
 
             var pixels = lines[0].ToList().ConvertAll(c => int.Parse("" + c));
 
@@ -47,7 +47,7 @@ namespace AdventOfCode
 
         public static void Problem2(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
             var pixels = lines[0].ToList().ConvertAll(c => int.Parse("" + c));
 
             int[,] image = new int[25, 6];

@@ -37,7 +37,7 @@ namespace AdventOfCode
 
         public static void Problem1(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
 
             // cable 1
             var directions1 = lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries);
@@ -69,7 +69,7 @@ namespace AdventOfCode
 
         public static void Problem2(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
 
             // cable 1
             var directions1 = lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries);

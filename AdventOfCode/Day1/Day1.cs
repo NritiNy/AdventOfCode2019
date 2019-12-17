@@ -8,7 +8,7 @@ namespace AdventOfCode
     {
         public static void Problem1(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
             var integers = lines.ConvertAll((string line) => int.Parse(line));
 
             var sum = DivideBy3minus2(integers).Sum();
@@ -17,7 +17,7 @@ namespace AdventOfCode
 
         public static void Problem2(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
             var integers = lines.ConvertAll((string line) => int.Parse(line));
 
             int sum = 0;

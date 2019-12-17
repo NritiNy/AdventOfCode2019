@@ -7,7 +7,7 @@ namespace AdventOfCode
 {
     public static class Misc
     {
-        public static List<string> readLines(string inputFile, string seperator)
+        public static List<string> ReadLines(string inputFile, string seperator)
         {
             return new List<string>(File.ReadAllText(inputFile).Split(seperator, StringSplitOptions.RemoveEmptyEntries));
         }

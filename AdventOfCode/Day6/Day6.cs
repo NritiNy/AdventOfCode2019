@@ -8,7 +8,7 @@ namespace AdventOfCode
     {
         public static void Problem1(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
 
             Dictionary<string, TreeNode> objects = new Dictionary<string, TreeNode>();
             Tree tree = null;
@@ -40,7 +40,7 @@ namespace AdventOfCode
 
         public static void Problem2(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
 
             Dictionary<string, TreeNode> objects = new Dictionary<string, TreeNode>();
             Tree tree = null;

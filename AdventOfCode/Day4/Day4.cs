@@ -6,7 +6,7 @@ namespace AdventOfCode
     {
         public static void Problem1(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
 
             int start = int.Parse(lines[0].Split("-")[0]);
             int end = int.Parse(lines[0].Split("-")[1]);
@@ -33,7 +33,7 @@ namespace AdventOfCode
 
         public static void Problem2(string input)
         {
-            var lines = Misc.readLines(input, Environment.NewLine);
+            var lines = Misc.ReadLines(input, Environment.NewLine);
 
             int start = int.Parse(lines[0].Split("-")[0]);
             int end = int.Parse(lines[0].Split("-")[1]);
