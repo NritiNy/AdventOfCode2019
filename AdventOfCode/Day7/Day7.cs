@@ -10,22 +10,22 @@ namespace AdventOfCode
         public static void Problem1(string input)
         {
             var lines = Misc.readLines(input, Environment.NewLine);
-            int[] values = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => int.Parse(val)).ToArray();
+            long[] values = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => long.Parse(val)).ToArray();
 
             var computer = new IntcodeComputer(values);
             computer.InputMode = InputMode.Automatic;
             computer.OutputMode = OutputMode.Internal;
 
             var combinations = GetPermutations(new List<int>() { 0, 1, 2, 3, 4 });
-            int max = -1;
+            long max = -1;
             foreach (var combi in combinations)
             {
-                int output = 0;
+                long output = 0;
                 foreach (int i in combi)
                 {
                     computer.Programm = values;
                     computer.Reset();
-                    computer.Input = new List<int>() { i, output };
+                    computer.Input = new List<long>() { i, output };
                     computer.Run();
 
                     output = computer.Output[0];
@@ -61,10 +61,10 @@ namespace AdventOfCode
         public static void Problem2(string input)
         {
             var lines = Misc.readLines(input, Environment.NewLine);
-            int[] values = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => int.Parse(val)).ToArray();
+            long[] values = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => long.Parse(val)).ToArray();
 
             var combinations = GetPermutations(new List<int>() { 5, 6, 7, 8, 9 });
-            int max = -1;
+            long max = -1;
 
             foreach (var combi in combinations)
             {
@@ -79,7 +79,7 @@ namespace AdventOfCode
                     computers.Add(computer);
                 }
 
-                int output = 0;
+                long output = 0;
                 Queue<IntcodeComputer> pcs = new Queue<IntcodeComputer>(computers);
 
                 while (pcs.Count > 0)

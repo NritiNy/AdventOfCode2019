@@ -28,26 +28,30 @@ namespace AdventOfCode
         {
             public int Adress { get; private set; }
 
-            public int RelativeBase { get; private set; }
+            public long RelativeBase { get; private set; }
 
             public ParameterMode Mode { get; private set; }
 
-            public Parameter(int adress, int relBase, ParameterMode mode)
+            public Parameter(int adress, long relBase, ParameterMode mode)
             {
                 Adress = adress;
                 RelativeBase = relBase;
                 Mode = mode;
             }
 
-            public int GetValue(int[] memory)
+            public long GetValue(ref IntcodeComputer computer)
             {
+                if (Adress > computer.CurrentMemoryState().Length)
+                    computer.ResizeMemory(Adress);
+
                 if (Mode == ParameterMode.Immediate)
                 {
-                    return memory[Adress];
+                    return computer.CurrentMemoryState()[Adress];
                 }
                 else if(Mode == ParameterMode.Position || Mode == ParameterMode.Relative)
                 {
-                    return memory[GetPosition(memory)];
+                    var adress = GetPosition(ref computer);
+                    return computer.CurrentMemoryState()[adress];
                 }
                 else
                 {
@@ -55,12 +59,27 @@ namespace AdventOfCode
                 }
             }
 
-            public int GetPosition(int[] memory)
+            public long GetPosition(ref IntcodeComputer computer)
             {
+                if (Adress > computer.CurrentMemoryState().Length)
+                    computer.ResizeMemory(Adress);
+                if (RelativeBase + computer.CurrentMemoryState()[Adress] > computer.CurrentMemoryState().Length)
+                    computer.ResizeMemory((int)(RelativeBase + computer.CurrentMemoryState()[Adress]));
+
                 if (Mode == ParameterMode.Position)
-                    return memory[Adress];
+                {
+                    var pos = computer.CurrentMemoryState()[Adress];
+                    if (pos > computer.CurrentMemoryState().Length)
+                        computer.ResizeMemory((int)pos);
+                    return pos;
+                }
                 else if (Mode == ParameterMode.Relative)
-                    return memory[RelativeBase + memory[Adress]];
+                {
+                    var pos = RelativeBase + computer.CurrentMemoryState()[Adress];
+                    if (pos > computer.CurrentMemoryState().Length)
+                        computer.ResizeMemory((int)pos);
+                    return pos;
+                }
                 else
                     throw new NotImplementedException($"Parameter Mode must be {ParameterMode.Position}");
             }
@@ -73,11 +92,11 @@ namespace AdventOfCode
 
         public abstract class IInstruction
         {
-            public static Dictionary<int, Type> AvailableInstructions { get; } = InitializeAvailableInstructions();
+            public static Dictionary<long, Type> AvailableInstructions { get; } = InitializeAvailableInstructions();
 
-            private static Dictionary<int, Type> InitializeAvailableInstructions()
+            private static Dictionary<long, Type> InitializeAvailableInstructions()
             {
-                var ret = new Dictionary<int, Type>();
+                var ret = new Dictionary<long, Type>();
 
                 foreach (InstructionType type in Enum.GetValues(typeof(InstructionType)))
                 {
@@ -114,22 +133,7 @@ namespace AdventOfCode
                 }
             }
 
-            public abstract InstructionResult Execute(IntcodeComputer computer, int[] buffer);
-
-
-            public static IInstruction GetInstruction(int instructionOpCode, int position)
-            {
-                var code = instructionOpCode % 100;
-                instructionOpCode = (instructionOpCode - code) / 100;
-
-                Type instruction = AvailableInstructions[code];
-
-                var paramModes = ("" + instructionOpCode).ToCharArray().ToList().ConvertAll(c => int.Parse("" + c));
-                paramModes.Reverse();
-
-                object[] args = { position, paramModes };
-                return (IInstruction)Activator.CreateInstance(instruction, args);
-            }
+            public abstract InstructionResult Execute(IntcodeComputer computer, long[] buffer);
         }
 
         public class AdditionInstruction : IInstruction
@@ -142,12 +146,15 @@ namespace AdventOfCode
             {
             }
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
-                    memory[Parameters[2].GetPosition(memory)] = Parameters[0].GetValue(memory) + Parameters[1].GetValue(memory);
+                    var in1 = Parameters[0].GetValue(ref computer);
+                    var in2 = Parameters[1].GetValue(ref computer);
+                    var dest = Parameters[2].GetPosition(ref computer);
+
+                    computer.CurrentMemoryState()[dest] = in1 + in2;
 
                     return new InstructionResult(true, "AdditionInstruction passed.");
                 }
@@ -169,12 +176,15 @@ namespace AdventOfCode
             {
             }
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
-                    memory[Parameters[2].GetPosition(memory)] = Parameters[0].GetValue(memory) * Parameters[1].GetValue(memory);
+                    var in1 = Parameters[0].GetValue(ref computer);
+                    var in2 = Parameters[1].GetValue(ref computer);
+                    var dest = Parameters[2].GetPosition(ref computer);
+
+                    computer.CurrentMemoryState()[dest] = in1 * in2;
 
                     return new InstructionResult(true, "MiltiplicationInstruction passed.");
                 }
@@ -195,14 +205,14 @@ namespace AdventOfCode
 
             public override int Size => 2;
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
+                    var dest = Parameters[0].GetPosition(ref computer);
 
                     var input = buffer[0];
-                    memory[Parameters[0].GetPosition(memory)] = input;
+                    computer.CurrentMemoryState()[dest] = input;
 
                     return new InstructionResult(true, "InputInstruction passed.");
                 }
@@ -223,17 +233,17 @@ namespace AdventOfCode
 
             public override int Size => 2;
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
-                    buffer[0] = Parameters[0].GetValue(memory);
+                    buffer[0] = Parameters[0].GetValue(ref computer);
 
                     return new InstructionResult(true, "OutputInstruction passed.");
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine(e);
                     return new InstructionResult(false, e.Message);
                 }
             }
@@ -249,13 +259,12 @@ namespace AdventOfCode
 
             public override int Size => 3;
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
-                    if (Parameters[0].GetValue(memory) != 0)
-                        _next = Parameters[1].GetValue(memory);
+                    if (Parameters[0].GetValue(ref computer) != 0)
+                        _next = (int)Parameters[1].GetValue(ref computer);
 
                     return new InstructionResult(true, "JumpIfTrueInstruction passed.");
                 }
@@ -276,13 +285,13 @@ namespace AdventOfCode
 
             public override int Size => 3;
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
-                    if (Parameters[0].GetValue(memory) == 0)
-                        _next = Parameters[1].GetValue(memory);
+                    var memory = computer.CurrentMemoryState();
+                    if (Parameters[0].GetValue(ref computer) == 0)
+                        _next = (int)Parameters[1].GetValue(ref computer);
 
                     return new InstructionResult(true, "JumpIfFalseInstruction passed.");
                 }
@@ -303,13 +312,14 @@ namespace AdventOfCode
 
             public override int Size => 4;
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
-                    bool less = Parameters[0].GetValue(memory) < Parameters[1].GetValue(memory);
-                    memory[Parameters[2].GetPosition(memory)] = less ? 1 : 0;
+                    bool less = Parameters[0].GetValue(ref computer) < Parameters[1].GetValue(ref computer);
+                    var dest = Parameters[2].GetPosition(ref computer);
+
+                    computer.CurrentMemoryState()[dest] = less ? 1 : 0;
 
                     return new InstructionResult(true, "LessThanInstruction passed.");
                 }
@@ -330,13 +340,14 @@ namespace AdventOfCode
 
             public override int Size => 4;
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    var memory = computer.CurrentMemoryState;
-                    bool less = Parameters[0].GetValue(memory) == Parameters[1].GetValue(memory);
-                    memory[Parameters[2].GetPosition(memory)] = less ? 1 : 0;
+                    bool equal = Parameters[0].GetValue(ref computer) == Parameters[1].GetValue(ref computer);
+                    var dest = Parameters[2].GetPosition(ref computer);
+
+                    computer.CurrentMemoryState()[dest] = equal ? 1 : 0;
 
                     return new InstructionResult(true, "EqualsInstruction passed.");
                 }
@@ -357,11 +368,11 @@ namespace AdventOfCode
 
             public override int Size => 2;
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 try
                 {
-                    computer.RelativeBase = Parameters[0].GetValue(computer.CurrentMemoryState);
+                    computer.RelativeBase += (int)Parameters[0].GetValue(ref computer);
                     return new InstructionResult(true, "AdjustRelativeBaseInstruction passed.");
                 } catch (Exception e)
                 {
@@ -381,7 +392,7 @@ namespace AdventOfCode
             {
             }
 
-            public override InstructionResult Execute(IntcodeComputer computer, int[] buffer)
+            public override InstructionResult Execute(IntcodeComputer computer, long[] buffer)
             {
                 return new InstructionResult(false, "StopInstruction passed.");
             }

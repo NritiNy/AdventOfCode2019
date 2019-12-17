@@ -10,7 +10,7 @@ namespace AdventOfCode
         public static void Problem1(string input)
         {
             var lines = Misc.readLines(input, Environment.NewLine);
-            int[] values = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => int.Parse(val)).ToArray();
+            long[] values = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => long.Parse(val)).ToArray();
 
             var computer = new IntcodeComputer(values);
             computer.Run();
@@ -21,7 +21,7 @@ namespace AdventOfCode
         public static void Problem2(string input)
         {
             var lines = Misc.readLines(input, Environment.NewLine);
-            int[] inputValues = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => int.Parse(val)).ToArray();
+            long[] inputValues = new List<string>(lines[0].Split(",", StringSplitOptions.RemoveEmptyEntries)).ConvertAll((string val) => long.Parse(val)).ToArray();
 
             var computer = new IntcodeComputer(inputValues);
 
@@ -37,10 +37,10 @@ namespace AdventOfCode
                     inputValues[1] = noun;
                     inputValues[2] = verb;
 
-                    computer.Programm = (int[])inputValues.Clone();
+                    computer.Programm = (long[])inputValues.Clone();
                     computer.Reset();
                     computer.Run();
-                    if (computer.CurrentMemoryState[0] == 19690720)
+                    if (computer.CurrentMemoryState()[0] == 19690720)
                     {
                         found = true;
                         --noun; // it is raised by one at the end of the for loop

@@ -13,33 +13,34 @@ namespace AdventOfCode
 
         public class IntcodeComputer
         {
-            public int[] Programm { get; set; }
+            public long[] Programm { get; set; }
 
-            public int[] CurrentMemoryState { get; private set; }
+            private long[] _currentMemory;
+            public ref long[] CurrentMemoryState() => ref _currentMemory;
             public int InstructionPointer { get; private set; } = 0;
             public int RelativeBase { get; set; } = 0;
 
-            public List<int> Input { get; set; } = new List<int>();
-            private int InputPointer { get; set; } = 0;
+            public List<long> Input { get; set; } = new List<long>();
+            private long InputPointer { get; set; } = 0;
             public InputMode InputMode { get; set; } = InputMode.Manual;
 
-            public List<int> Output { get; private set; } = new List<int>();
-            private int OutputPointer { get; set; } = 0;
+            public List<long> Output { get; private set; } = new List<long>();
+            private long OutputPointer { get; set; } = 0;
             public OutputMode OutputMode { get; set; } = OutputMode.External;
 
-            public IntcodeComputer(int[] input = null)
+            public IntcodeComputer(long[] input = null)
             {
-                Programm = (int[])input.Clone() ?? new int[0];
+                Programm = (long[])input.Clone() ?? new long[0];
                 Reset();
             }
 
             public ExitCode Run()
             {
-                for (; InstructionPointer < CurrentMemoryState.Length;)
+                for (; InstructionPointer < CurrentMemoryState().Length;)
                 {
-                    var instruction = IInstruction.GetInstruction(instructionOpCode: CurrentMemoryState[InstructionPointer], position: InstructionPointer);
+                    var instruction = GetInstruction(instructionOpCode: CurrentMemoryState()[InstructionPointer], position: InstructionPointer);
 
-                    int[] buffer = new int[1] { 0 };
+                    long[] buffer = new long[1] { 0 };
                     if (instruction.InstructionType == InstructionType.Input)
                     {
                         if(InputMode == InputMode.Manual)
@@ -59,7 +60,7 @@ namespace AdventOfCode
                         {
                             try
                             {
-                                buffer[0] = Input[InputPointer];
+                                buffer[0] = Input[(int)InputPointer];
                                 if (InputMode == InputMode.Automatic)
                                     ++InputPointer;
                             } catch
@@ -100,16 +101,20 @@ namespace AdventOfCode
 
             public void Reset()
             {
-                CurrentMemoryState = (int[])Programm.Clone();
+                _currentMemory = (long[])Programm.Clone();
                 InstructionPointer = 0;
-                Input = new List<int>();
+                Input = new List<long>();
                 InputPointer = 0;
-                Output = new List<int>();
+                Output = new List<long>();
                 OutputPointer = 0;
             }
 
+            public void ResizeMemory(int lastIndex)
+            {
+                Array.Resize(ref CurrentMemoryState(), lastIndex+1);
+            }
 
-            public IInstruction GetInstruction(int instructionOpCode, int position)
+            public IInstruction GetInstruction(long instructionOpCode, long position)
             {
                 var code = instructionOpCode % 100;
                 instructionOpCode = (instructionOpCode - code) / 100;
